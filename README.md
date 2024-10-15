@@ -2,14 +2,16 @@
 
 ## Overview
 
-This To-Do List application is a command-line tool written in C# that allows users to manage their tasks effectively. Users can add, remove, show, and complete tasks with a simple and user-friendly interface. The application uses a gradient printer for visually appealing text output and encrypts task files for added security.
+This To-Do List application is a command-line tool written in C# that allows users to manage their tasks effectively. Users can add, remove,edit, show, complete and uncomplete tasks with a simple and user-friendly interface. The application uses a gradient printer for visually appealing text output and encrypts task files for added security.
 
 ## Features
 
 - **Add Tasks**: Users can add tasks to their to-do list, which are stored in a text file.
 - **Remove Tasks**: Users can remove tasks by selecting them from a numbered list.
+- **Edit Tasks**: Users can edit tasks by selecting them from a numbered list.
 - **Show Tasks**: Users can view all their current tasks, displayed in a numbered format.
 - **Complete Tasks**: Users can mark tasks as completed, which updates their status in the task list.
+- **UnComplete Tasks**: Users can mark tasks as Uncompleted if the task was completed, which updates their status in the task list.
 - **Data Security**: Tasks are saved in an encrypted format, ensuring privacy and security.
 
 ## Gradient Printer
