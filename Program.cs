@@ -12,7 +12,6 @@ namespace ToDoList
         private (int, int, int) endColor;
         private int steps;
         private (int, int, int)[] colors;
-
         public GradientPrinter((int, int, int)? startColor = null, (int, int, int)? endColor = null, int steps = 10)
         {
             this.startColor = startColor ?? (128, 0, 255);
@@ -20,7 +19,6 @@ namespace ToDoList
             this.steps = steps;
             this.colors = GenerateGradient();
         }
-
         private (int, int, int)[] GenerateGradient()
         {
             (int, int, int)[] gradient = new (int, int, int)[steps];
@@ -38,6 +36,7 @@ namespace ToDoList
 
             return gradient;
         }
+
         public void Print(string text)
         {
             string[] lines = text.Split('\n');
@@ -55,7 +54,6 @@ namespace ToDoList
                 }
             }
         }
-
         public void PrintCenter(string text)
         {
             string[] lines = text.Split('\n');
@@ -76,7 +74,6 @@ namespace ToDoList
 
     class ToDoClass
     {
-
         public static void Main(string[] args)
         {
             Console.Title = "Lucas ToDo | Made By Lucas";
@@ -98,15 +95,18 @@ namespace ToDoList
                         RemoveTask();
                         break;
                     case 3:
-                        ShowTasks();
+                        EditTask();
                         break;
                     case 4:
-                        CompleteTasks();
+                        ShowTasks();
                         break;
                     case 5:
-                        UnCompleteTasks();
+                        CompleteTasks();
                         break;
                     case 6:
+                        UnCompleteTasks();
+                        break;
+                    case 7:
                         System.Environment.Exit(0);
                         break;
                     default:
@@ -162,7 +162,7 @@ namespace ToDoList
                 }
                 else
                 {
-                    tasks.Add($"\u001b[1m{task}: \u001b[0m {taskDescription}"); // Save the entered task
+                    tasks.Add($"{task}: {taskDescription}"); // Save the entered task
                 }
 
             }
@@ -252,6 +252,117 @@ namespace ToDoList
             }
         }
 
+        public static void EditTask()
+        {
+            GradientPrinter printer = new GradientPrinter();
+            List<string> tasks = new List<string>();
+            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tasks.txt");
+
+            // Check if the file exists and read tasks
+            if (fileCheck())
+            {
+                try
+                {
+                    // Decrypt the file before reading
+                    File.Decrypt(filePath);
+                    tasks.AddRange(File.ReadAllLines(filePath));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error reading the file: {ex.Message}");
+                    return;
+                }
+            }
+            else
+            {
+                fileCheck();
+                return; // Exit if no tasks
+            }
+
+            while (true)
+            {
+                ClearPrint();
+                // Prepare the display string for current tasks
+                string FinalString = "Enter The Number Of The Task You Want To Edit: (Exit to leave):\nCurrent Tasks:\n";
+                int count = 1;
+                foreach (var task in tasks)
+                {
+                    FinalString += $"{count}. {task}\n";
+                    count++;
+                }
+
+                printer.PrintCenter(FinalString);
+
+                InputLine(); // Display input line
+                string input = Console.ReadLine();
+
+                if (input.ToLower() == "exit")
+                {
+                    MainMenu();
+                    break; // Exit the loop if the user types "exit"
+                }
+
+                // Try to parse the input as a task number
+                if (int.TryParse(input, out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
+                {
+                    ClearPrint();
+                    printer.PrintCenter($"Current Task: {tasks[taskNumber - 1]}");
+                    printer.PrintCenter("Enter The New Task Name: (Exit To leave): ");
+                    InputLine();
+                    string taskName = Console.ReadLine();
+
+                    if (taskName.ToLower() == "exit")
+                    {
+                        break;
+                    }
+
+                    printer.PrintCenter("Enter The New Description For The Task: (Skip To Skip, Exit To Leave)");
+                    InputLine();
+                    string taskDescription = Console.ReadLine();
+
+                    if (taskDescription.ToLower() == "exit")
+                    {
+                        break;
+                    }
+                    else if (taskDescription.ToLower() == "skip")
+                    {
+                        tasks[taskNumber - 1] = taskName; // Update the task with just the new name
+                    }
+                    else
+                    {
+                        tasks[taskNumber - 1] = $"{taskName}: {taskDescription}"; // Update the task with new name and description
+                    }
+
+                    printer.PrintCenter($"Task {taskNumber} has been updated.");
+                    System.Threading.Thread.Sleep(1500);
+                }
+                else
+                {
+                    printer.PrintCenter("Invalid input. Please enter a valid task number.");
+                    System.Threading.Thread.Sleep(1500);
+                }
+
+                try
+                {
+                    // Write updated tasks to file
+                    File.WriteAllLines(filePath, tasks);
+
+                    // Re-encrypt the file after writing
+                    File.Encrypt(filePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"An error occurred while saving tasks: {ex.Message}");
+                    System.Threading.Thread.Sleep(5000);
+
+                }
+            }
+
+
+
+            MainMenu();
+        }
+
 
         public static void ShowTasks()
         {
@@ -284,7 +395,6 @@ namespace ToDoList
             }
 
         }
-
 
         public static void CompleteTasks()
         {
@@ -453,7 +563,6 @@ namespace ToDoList
             GradientPrinter printer = new GradientPrinter();
             printer.PrintCenter(Options());
         }
-
         public static void ClearPrint()
         {
             Console.Clear();
@@ -474,7 +583,6 @@ namespace ToDoList
         {
             Console.WriteLine(text.ToString());
         }
-
         public static void MainMenu()
         {
             ClearPrint();
@@ -565,7 +673,7 @@ namespace ToDoList
 
         public static string Options()
         {
-            string options = "What I Can Offer You: \n1. Add Task \n2. Remove Task \n3. Show Taskes \n4. Complete Task \n5. UnComplete Task\n6. Exit";
+            string options = "What I Can Offer You: \n1. Add Task \n2. Remove Task \n3. Edit Task\n4. Show Taskes \n5. Complete Task \n6. UnComplete Task\n7. Exit";
 
             return options;
         }
