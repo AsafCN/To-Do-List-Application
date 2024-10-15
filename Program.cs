@@ -1,4 +1,4 @@
-﻿
+
 using System.Data;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -104,6 +104,9 @@ namespace ToDoList
                         CompleteTasks();
                         break;
                     case 5:
+                        UnCompleteTasks();
+                        break;
+                    case 6:
                         System.Environment.Exit(0);
                         break;
                     default:
@@ -144,7 +147,24 @@ namespace ToDoList
                     break;
                 }
 
-                tasks.Add($"{task}"); // Save the entered task
+                printer.PrintCenter("Enter The Description of the task: (Skip To Skip, Exit To Leave)");
+                InputLine();
+                string taskDescription = Console.ReadLine();
+
+                if (taskDescription.ToLower() == "exit")
+                {
+                    tasks.Add($"{task}"); // Save the entered task
+                    break;
+                }
+                else if (taskDescription.ToLower() == "skip")
+                {
+                    tasks.Add($"{task}"); // Save the entered task
+                }
+                else
+                {
+                    tasks.Add($"\u001b[1m{task}: \u001b[0m {taskDescription}"); // Save the entered task
+                }
+
             }
 
             try
@@ -320,11 +340,99 @@ namespace ToDoList
                 // Try to parse the input as a task number
                 if (int.TryParse(input, out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
                 {
-                    string completedTask = tasks[taskNumber - 1]; // Get the task by index
-                    tasks[taskNumber - 1] = $"{completedTask} (Completed)"; // Mark as completed
+                    if (tasks[taskNumber - 1].Contains("(Completed)"))
+                    {
+                        printer.PrintCenter("The Task Is Already Completed... \nTry Another Task.");
+                        System.Threading.Thread.Sleep(1500);
+                    }
+                    else
+                    {
+                        string completedTask = tasks[taskNumber - 1]; // Get the task by index
+                        tasks[taskNumber - 1] = $"{completedTask} (Completed)"; // Mark as completed
 
-                    printer.PrintCenter($"Task '{completedTask}' has been marked as completed.");
+                        printer.PrintCenter($"Task '{completedTask}' has been marked as completed.");
+                        System.Threading.Thread.Sleep(1500);
+                    }
+                }
+                else
+                {
+                    printer.PrintCenter("Invalid input. Please enter a valid task number.");
                     System.Threading.Thread.Sleep(1500);
+                }
+
+                // Optionally, save the updated tasks back to the file
+                File.WriteAllLines(filePath, tasks);
+                File.Encrypt(filePath);
+            }
+        }
+
+        public static void UnCompleteTasks()
+        {
+            GradientPrinter printer = new GradientPrinter();
+            List<string> tasks = new List<string>();
+            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tasks.txt");
+
+            // Check if the file exists and read tasks
+            if (fileCheck())
+            {
+                File.Decrypt(filePath);
+                tasks.AddRange(File.ReadAllLines(filePath));
+                File.Encrypt(filePath);
+
+            }
+            else
+            {
+                fileCheck();
+                return; // Exit if no tasks
+            }
+
+            // Loop to allow user to complete tasks
+            while (true)
+            {
+                ClearPrint(); // Clear the screen or output
+                if (tasks.Count == 0)
+                {
+                    printer.PrintCenter("No tasks available to uncomplete.");
+                    System.Threading.Thread.Sleep(1500);
+                    break; // Exit if no tasks are available
+                }
+
+                // Prepare the display string for current tasks
+                string FinalString = "Enter the number of the task you want to uncomplete: (Exit to leave):\nCurrent Tasks:\n";
+                int count = 1;
+                foreach (var task in tasks)
+                {
+                    FinalString += $"{count}. {task}\n";
+                    count++;
+                }
+
+                printer.PrintCenter(FinalString);
+
+                InputLine(); // Display input line
+                string input = Console.ReadLine();
+
+                if (input.ToLower() == "exit")
+                {
+                    MainMenu();
+                    break; // Exit the loop if the user types "exit"
+                }
+
+                // Try to parse the input as a task number
+                if (int.TryParse(input, out int taskNumber) && taskNumber > 0 && taskNumber <= tasks.Count)
+                {
+                    if (tasks[taskNumber - 1].Contains("(Completed)"))
+                    {
+                        string completedTask = tasks[taskNumber - 1]; // Get the task by index
+                        tasks[taskNumber - 1] = $"{completedTask.Replace("(Completed)","")}"; // Mark as uncompleted
+
+                        printer.PrintCenter($"Task '{completedTask}' has been marked as UnCompleted.");
+                        System.Threading.Thread.Sleep(1500);
+                    }
+                    else
+                    {
+                        printer.PrintCenter("The Task Is Already UnCompleted... \nTry Another Task.");
+                        System.Threading.Thread.Sleep(1500);
+                    }
                 }
                 else
                 {
@@ -457,7 +565,7 @@ namespace ToDoList
 
         public static string Options()
         {
-            string options = "What I Can Offer You: \n1. Add Task \n2. Remove Task \n3. Show Taskes \n4. Complete Task \n5. Exit";
+            string options = "What I Can Offer You: \n1. Add Task \n2. Remove Task \n3. Show Taskes \n4. Complete Task \n5. UnComplete Task\n6. Exit";
 
             return options;
         }
